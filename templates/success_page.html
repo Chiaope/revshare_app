@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success</title>
+    <style>
+        :root {
+            --bg: #f6f7f9;
+            --card: #ffffff;
+            --text: #111827;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --primary: #2563eb;
+            --success: #16a34a;
+            --radius: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            width: min(480px, 92vw);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: clamp(28px, 5vw, 40px);
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+        }
+
+        .icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            background: #dcfce7;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+        }
+
+        .icon svg {
+            width: 32px;
+            height: 32px;
+            color: var(--success);
+        }
+
+        h1 {
+            font-size: clamp(22px, 3.5vw, 26px);
+            font-weight: 650;
+            margin: 0 0 8px;
+        }
+
+        p {
+            color: var(--muted);
+            margin: 0 0 24px;
+            font-size: clamp(14px, 1.8vw, 16px);
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+            border: 1px solid var(--border);
+            color: var(--text);
+            background: white;
+        }
+
+        .button.primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .button.primary:disabled { opacity: .6; cursor: not-allowed; }
+
+        .button:hover {
+            opacity: .9;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div class="icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+
+        <h1>Success</h1>
+        <p>Successfully submitted.</p>
+
+        <div class="actions">
+            <button id="review_another_button" type="button" class="button primary">
+                Review Another Response
+            </button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.getElementById('review_another_button');
+
+            btn.addEventListener('click', function () {
+                if (btn.disabled) return;
+
+                btn.disabled = true;              // native disable
+                btn.textContent = 'Loading...';
+
+                // navigate like your old <a href="/">
+                window.location.href = "{{ url_for('index') }}";
+            });
+
+            // re-enable if user hits Back
+            window.addEventListener('pageshow', () => {
+                btn.disabled = false;
+                btn.textContent = 'Review Another Response';
+            });
+        });
+    </script>
+</body>
+
+</html>

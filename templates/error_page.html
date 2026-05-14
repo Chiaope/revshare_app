@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Error</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1f2937;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+        .card {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .icon {
+            font-size: 3rem;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        h1 {
+            margin: 0.25rem 0 0.75rem;
+            font-size: 1.75rem;
+            color: #dc2626;
+        }
+        p {
+            margin: 0 0 2rem;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+        .button.primary {
+            background: #0d6efd;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s ease, opacity 0.15s ease;
+        }
+        .button.primary:hover {
+            background: #0b5ed7;
+        }
+        .button.primary:disabled {
+            background: #adb5bd;
+            color: #f8f9fa;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">⚠️</div>
+        <h1>Error</h1>
+        <p>{{ message or "Something went wrong. Please try again." }}</p>
+        
+        <button id="homeBtn" type="button" class="button primary">
+            Return to Home
+        </button>
+    </div>
+
+    <script>
+        const btn = document.getElementById('homeBtn');
+        
+        btn.addEventListener('click', function () {
+            if (btn.disabled) return;
+            
+            btn.disabled = true;              // grays out via CSS above
+            btn.textContent = 'Returning...';
+            
+            window.location.href = "{{ url_for('index') }}";
+        });
+
+        // if user hits Back, re-enable
+        window.addEventListener('pageshow', () => {
+            btn.disabled = false;
+            btn.textContent = 'Return to Home';
+        });
+    </script>
+</body>
+</html>

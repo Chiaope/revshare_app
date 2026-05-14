@@ -1,0 +1,13 @@
+command: [
+  "flask",
+  "--app",
+  "app.py",
+  "run"
+]
+env:
+  - name: DATABRICKS_HTTP_PATH
+    value: "/sql/1.0/warehouses/61ee44ab8cb06215"
+  - name: MY_TOKEN
+    valueFrom: token
+  - name: DATABRICKS_HOST
+    value: "finalto-live.cloud.databricks.com"
