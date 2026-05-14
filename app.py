@@ -189,8 +189,8 @@ def index():
 def handle_error(e):
     return render_template('error_page.html', message=str(e)), 500
 
-@app.route("/selected-data", methods=["POST"])
-def selected_data():
+@app.route("/internal-form", methods=["POST"])
+def internal_form():
     # Grab the selected value from the dropdown using the <select> name attribute
     raw_selected_data = request.form.get("selected_data")
     if not raw_selected_data:
@@ -216,8 +216,8 @@ def selected_data():
         return "<h1>Error</h1> <p>No ID was selected.</p>"
 
 
-@app.route("/review", methods=["POST"])
-def review():
+@app.route("/review-form", methods=["POST"])
+def review_form():
     data = dict(request.form)
 
     if not data:
