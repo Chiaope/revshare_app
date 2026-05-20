@@ -7,12 +7,18 @@ import os
 
 # from databricks.sdk import WorkspaceClient
 
+secondary_sales_question = "Is there a secondary owner assigned to this client profile? If yes, please specify."
+internal_secondary_sales_question = "Secondary sales person rebate"
+internal_primary_sales_question = "Primary sales person rebate"
+
 question_ordered = [
     "status",
     "submitDate",
     "responder",
     "response_id",
-    "score",
+    "external_score",
+    "internal_score",
+    "total_score",
     "Who is the salesperson (Primary owner) completing this form?",
     "Is there a secondary owner assigned to this client profile? If yes, please specify.",
     "What is the client’s company registered name?",
@@ -51,8 +57,47 @@ question_ordered = [
     "Attachments",
 ]
 
-default_status = "Pending"
-available_status = ["Rejected", "Completed"]
+enable_edit_status = "Passed (1A) -  Pending on Risk KYC"
+base_available_status = ["Rejected", "Passed (1B) - Pending on DA"]
+offerings_available_status = [
+    "Rejected (2A) - Unsatisfactory Trading Performance",
+    "Rejected (2A) - Data Quality Concerns",
+    "Rejected (2A) - Strategy / Portfolio Misalignment",
+    "Rejected (2A) - Others",
+    "Passed (2A) - 10% (Client)/2W",
+    "Passed (2A) - 10% (Client)/SUT",
+    "Passed (2A) - 20% (Client)/2W",
+    "Passed (2A) - 20% (Client)/SUT",
+    "Passed (2A) - 30% (Client)/2W",
+    "Passed (2A) - 30% (Client)/SUT",
+    "Passed (2A) - 40% (Client)/2W",
+    "Passed (2A) - 40% (Client)/SUT",
+    "Passed (2A) - 50% (Client)/2W",
+    "Passed (2A) - 50% (Client)/SUT",
+    "Passed (2A) - 60% (Client)/2W",
+    "Passed (2A) - 60% (Client)/SUT",
+    "Passed (2A) - 70% (Client)/2W",
+    "Passed (2A) - 70% (Client)/SUT",
+    "Passed (2A) - Others",
+]
+post_offerings_available_status = [
+    "Rejected (2B) - Client rejects the offer",
+    "Completed - 10% (Client)/2W",
+    "Completed - 10% (Client)/SUT",
+    "Completed - 20% (Client)/2W",
+    "Completed - 20% (Client)/SUT",
+    "Completed - 30% (Client)/2W",
+    "Completed - 30% (Client)/SUT",
+    "Completed - 40% (Client)/2W",
+    "Completed - 40% (Client)/SUT",
+    "Completed - 50% (Client)/2W",
+    "Completed - 50% (Client)/SUT",
+    "Completed - 60% (Client)/2W",
+    "Completed - 60% (Client)/SUT",
+    "Completed - 70% (Client)/2W",
+    "Completed - 70% (Client)/SUT",
+    "Completed - Others",
+]
 
 internal_form_questions = [
     {
@@ -178,25 +223,49 @@ def run_databricks_query(sql_query, params=[], get_pandas=False):
 
 @app.route("/", methods=["GET"])
 def index():
-    query = "SELECT * from live_mart.riskmkt_apac.revshare_form where status = 'Pending' order by submitDate desc;"
+    query = "SELECT * from live_mart.riskmkt_apac.revshare_form where status like 'Pass%' order by submitDate desc;"
 
     results = run_databricks_query(query)
 
     return render_template("index.html", data=results)
 
+
 @app.errorhandler(500)
 @app.errorhandler(404)
 def handle_error(e):
-    return render_template('error_page.html', message=str(e)), 500
+    return render_template("error_page.html", message=str(e)), 500
+
 
 @app.route("/internal-form", methods=["POST"])
 def internal_form():
-    # Grab the selected value from the dropdown using the <select> name attribute
     raw_selected_data = request.form.get("selected_data")
     if not raw_selected_data:
         return "<h1>Error</h1> <p>External response data not found.</p>"
 
     selected_data = json.loads(raw_selected_data)
+
+    status = selected_data['status']
+    disable_edit = False
+    if status != enable_edit_status:
+        disable_edit = True
+
+    ignore_secondary_sales = (
+        True if selected_data[secondary_sales_question] == "" else False
+    )
+    actual_internal_form_questions = []
+    for i_q in internal_form_questions:
+        if ignore_secondary_sales and i_q["label"] == internal_secondary_sales_question:
+            continue
+        actual_internal_form_questions.append(i_q)
+
+    selected_internal_form_value = {
+        internal_question["label"]: None
+        for internal_question in internal_form_questions
+    }
+
+    for q, a in selected_data.items():
+        if q in selected_internal_form_value.keys() and a != "":
+            selected_internal_form_value[q] = a
 
     external_form_data = []
     for q in question_ordered:
@@ -204,12 +273,14 @@ def internal_form():
 
     if selected_data:
         selected_response_id = selected_data["response_id"]
-        score = selected_data["score"]
+        total_score = selected_data["total_score"]
         return render_template(
             "internal_form_page.html",
             selected_response_id=selected_response_id,
-            score=score,
-            internal_form_questions=internal_form_questions,
+            total_score=total_score,
+            disable_edit=disable_edit,
+            internal_form_questions=actual_internal_form_questions,
+            selected_internal_form_value=selected_internal_form_value,
             external_form_data=external_form_data,
         )
     else:
@@ -219,24 +290,44 @@ def internal_form():
 @app.route("/review-form", methods=["POST"])
 def review_form():
     data = dict(request.form)
+    available_status = base_available_status
+
+    status = data['status']
+    if status.startswith("Passed (1B)"):
+        available_status = offerings_available_status
+    elif status.startswith("Passed (2A)"):
+        available_status = post_offerings_available_status
 
     if not data:
         return "<h1>Error</h1> <p>No data submitted.</p>"
-    score = int(data.get("score", 0))
+    internal_score = 0
+    double_score = False if data.get(internal_secondary_sales_question) else True
     for key, value in data.items():
-        if key in ["selected_response_id", "score"]:
+        if key in [
+            "selected_response_id",
+            "external_score",
+            "internal_score",
+            "total_score",
+        ]:
             continue
-        score += int(score_mapping.get(value, 0))
-
-    data["score"] = score
+        if key == internal_primary_sales_question:
+            score = int(score_mapping.get(value, 0))
+            if double_score:
+                score = score * 2
+        else:
+            score = int(score_mapping.get(value, 0))
+        internal_score += score
 
     mapped_data = []
-
+    data["internal_score"] = str(internal_score)
+    data["total_score"] = str(int(data["external_score"]) + internal_score)
     for k, v in data.items():
         mapped_data.append({"question": k, "answer": v})
 
     return render_template(
-        "review_page.html", form_data=mapped_data, available_status=available_status
+        "review_page.html",
+        form_data=mapped_data,
+        available_status=available_status,
     )
 
 
@@ -245,14 +336,16 @@ def submit():
     set_str_list = []
     param_list = []
     data = dict(request.form)
-    print(f"Received form data: {data}", flush=True)
 
     if not data:
         return render_template("error_page.html", message="No data submitted.")
 
-    score = int(data.get("score", 0))
     for key, value in data.items():
-        if key in question_ordered + ["selected_status"]:
+        if key in question_ordered + [
+            "selected_status",
+            "internal_score",
+            "total_score",
+        ]:
             continue
         set_str_list.append(f"`{key}` = ?")
         param_list.append(value)
@@ -260,6 +353,8 @@ def submit():
     set_str = ", ".join(set_str_list)
     try:
         response_id = int(data["response_id"])
+        internal_score = int(data["internal_score"])
+        total_score = int(data["total_score"])
         status = data["selected_status"]
     except Exception as e:
         return render_template("error_page.html", message=f"Invalid input: {str(e)}")
@@ -267,13 +362,17 @@ def submit():
         UPDATE live_mart.riskmkt_apac.revshare_form
         SET 
             {set_str},
-            score = ?,
+            internal_score = ?,
+            total_score = ?,
             status = ?
         WHERE response_id = ?;
     """
 
     print(f"Query: {query}", flush=True)
-    run_databricks_query(query, params=param_list + [score, status, response_id])
+    print(f"Params: {param_list + [internal_score, total_score, status, response_id]}")
+    run_databricks_query(
+        query, params=param_list + [internal_score, total_score, status, response_id]
+    )
 
     return render_template("success_page.html")
 

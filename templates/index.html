@@ -103,7 +103,7 @@
                     <option value="" disabled selected>Select an ID...</option>
                     
                     {% for row in data %}
-                        <option value='{{ row | tojson }}'>{{ row['response_id'] }}</option>
+                        <option value='{{ row | tojson }}'>{{ row['response_id'] }} - {{ row['status'] }}</option>
                     {% endfor %}
                     
                 </select>

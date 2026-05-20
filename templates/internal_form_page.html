@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,8 +15,16 @@
             --primary: #2563eb;
             --radius: 14px;
         }
-        * { box-sizing: border-box; min-width: 0; }
-        html { -webkit-text-size-adjust: 100%; }
+
+        * {
+            box-sizing: border-box;
+            min-width: 0;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
         body {
             margin: 0;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -24,11 +33,13 @@
             font-size: clamp(14px, 1.6vw, 16px);
             line-height: 1.5;
         }
+
         .container {
             width: min(1200px, 95vw);
             margin-inline: auto;
             padding: clamp(16px, 4vw, 32px);
         }
+
         header {
             display: flex;
             flex-wrap: wrap;
@@ -37,13 +48,20 @@
             justify-content: space-between;
             margin-bottom: clamp(16px, 3vw, 28px);
         }
+
         h1 {
             font-size: clamp(20px, 3.2vw, 28px);
             font-weight: 650;
             margin: 0;
             flex: 1 1 auto;
         }
-        .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
         .badge {
             background: var(--card);
             border: 1px solid var(--border);
@@ -52,33 +70,42 @@
             font-size: clamp(12px, 1.4vw, 13px);
             white-space: nowrap;
         }
+
         form {
             display: flex;
-            flex-direction: column;   /* stack sections vertically */
+            flex-direction: column;
+            /* stack sections vertically */
             gap: 24px;
             width: 100%;
         }
+
         .card {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: clamp(16px, 2.5vw, 24px);
-            box-shadow: 0 1px 3px rgba(0,0,0,.04);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
             display: flex;
             flex-direction: column;
             min-height: 0;
         }
+
         .card h2 {
             font-size: clamp(15px, 2vw, 17px);
             margin: 0 0 14px;
             font-weight: 600;
         }
-        .qa { margin-bottom: 16px; }
+
+        .qa {
+            margin-bottom: 16px;
+        }
+
         .qa-question {
             font-size: 0.85em;
             color: var(--muted);
             margin-bottom: 6px;
         }
+
         .qa-answer {
             background: #f9fafb;
             border: 1px solid var(--border);
@@ -88,16 +115,31 @@
             word-break: break-word;
             white-space: pre-wrap;
         }
-        .qa-answer.empty { color: var(--muted); font-style: italic; }
-        .field { margin-bottom: 16px; }
+
+        .qa-answer.empty {
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
         label {
             display: block;
             font-weight: 500;
             margin-bottom: 6px;
             font-size: 0.95em;
         }
-        label.required::after { content:" *"; color:#dc2626; }
-        input, select, textarea {
+
+        label.required::after {
+            content: " *";
+            color: #dc2626;
+        }
+
+        input,
+        select,
+        textarea {
             width: 100%;
             max-width: 100%;
             padding: 10px 12px;
@@ -106,13 +148,20 @@
             font: inherit;
             background: white;
         }
-        input:focus, select:focus { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+        input:focus,
+        select:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
         .actions {
             grid-column: 1 / -1;
             display: flex;
             justify-content: flex-end;
             margin-top: 8px;
         }
+
         button {
             background: var(--primary);
             color: white;
@@ -123,20 +172,31 @@
             cursor: pointer;
             width: auto;
         }
-        button:disabled { opacity: .6; cursor: not-allowed; }
+
+        button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
         @media (max-width: 480px) {
-            .actions { justify-content: stretch; }
-            button { width: 100%; }
+            .actions {
+                justify-content: stretch;
+            }
+
+            button {
+                width: 100%;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
             <h1>Internal Form</h1>
             <div class="badges">
                 <div class="badge">Response ID: <strong>{{ selected_response_id }}</strong></div>
-                <div class="badge">Score: <strong>{{ score }}</strong></div>
+                <div class="badge">Total Score: <strong>{{ total_score }}</strong></div>
             </div>
         </header>
 
@@ -144,13 +204,14 @@
             <section class="card" aria-labelledby="ext-h">
                 <h2 id="ext-h">External Response</h2>
                 {% for external_question_answer in external_form_data %}
-                <input type="hidden" name="{{ external_question_answer.question }}" value="{{ external_question_answer.answer }}">
+                <input type="hidden" name="{{ external_question_answer.question }}"
+                    value="{{ external_question_answer.answer }}">
                 <div class="qa">
                     <div class="qa-question">{{ external_question_answer.question }}</div>
                     {% if not external_question_answer.answer %}
-                        <div class="qa-answer empty">No answer provided.</div>
+                    <div class="qa-answer empty">No answer provided.</div>
                     {% else %}
-                        <div class="qa-answer">{{ external_question_answer.answer }}</div>
+                    <div class="qa-answer">{{ external_question_answer.answer }}</div>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -160,16 +221,31 @@
                 <h2 id="int-h">Internal Review</h2>
                 {% for internal_question in internal_form_questions %}
                 <div class="field">
-                    <label for="{{ internal_question.name_attr }}" class="{% if internal_question.required %}required{% endif %}">
+                    <label for="{{ internal_question.name_attr }}"
+                        class="{% if internal_question.required %}required{% endif %}">
                         {{ internal_question.label }}
                     </label>
                     {% if internal_question.input_type == 'text' %}
-                    <input type="text" id="{{ internal_question.name_attr }}" name="{{ internal_question.name_attr }}" {% if internal_question.required %}required{% endif %}>
+                    <input type="text" id="{{ internal_question.name_attr }}" name="{{ internal_question.name_attr }}"
+                        {% if internal_question.required %}required{% endif %} {% if disable_edit %}
+                        style="pointer-events: none; background-color: #e9ecef; color: #6c757d;" tabindex="-1" {% endif
+                        %}>
                     {% elif internal_question.input_type == 'dropdown' %}
-                    <select id="{{ internal_question.name_attr }}" name="{{ internal_question.name_attr }}" {% if internal_question.required %}required{% endif %}>
-                        <option value="" disabled selected>Choose an option...</option>
+                    {% set default_val = selected_internal_form_value.get(internal_question.label) %}
+
+                    <select id="{{ internal_question.name_attr }}" name="{{ internal_question.name_attr }}" {% if
+                        internal_question.required %}required{% endif %} {% if disable_edit %}
+                        style="pointer-events: none; background-color: #e9ecef; color: #6c757d;" tabindex="-1" {% endif
+                        %}>
+                        <!-- 2. Select placeholder if no default value is found in the dict -->
+                        <option value="" disabled {% if not default_val %}selected{% endif %}>Choose an option...
+                        </option>
+
                         {% for option in internal_question.options %}
-                        <option value="{{ option }}">{{ option }}</option>
+                        <!-- 3. Compare the option against the retrieved default value -->
+                        <option value="{{ option }}" {% if option==default_val %}selected{% endif %}>
+                            {{ option }}
+                        </option>
                         {% endfor %}
                     </select>
                     {% endif %}
@@ -182,16 +258,24 @@
             </div>
         </form>
     </div>
-        <script>
-        document.getElementById('review_form').addEventListener('submit', function() {
+    <script>
+        document.getElementById('review_form').addEventListener('submit', function () {
             var submitButton = document.getElementById('review_button');
             
-            // Disable the button
-            submitButton.disabled = true;
+            // 1. Take focus away from whatever field the user is currently typing in
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
             
-            // Optional: Change the text to give the user feedback
+            // 2. Freeze the entire form so nothing can be clicked or edited
+            this.style.pointerEvents = 'none';
+            this.style.opacity = '0.8'; // Optional: gives visual feedback that it's processing
+            
+            // 3. Disable the button and change text (safe to do since it's just the trigger)
+            submitButton.disabled = true;
             submitButton.innerText = 'Loading...';
         });
     </script>
 </body>
+
 </html>

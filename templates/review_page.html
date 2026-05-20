@@ -172,10 +172,17 @@
         document.getElementById('submit_form').addEventListener('submit', function() {
             var submitButton = document.getElementById('submit_button');
             
-            // Disable the button
-            submitButton.disabled = true;
+            // 1. Take focus away from whatever field the user is currently typing in
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
             
-            // Optional: Change the text to give the user feedback
+            // 2. Freeze the entire form so nothing can be clicked or edited
+            this.style.pointerEvents = 'none';
+            this.style.opacity = '0.8'; // Optional: gives visual feedback that it's processing
+            
+            // 3. Disable the button and change text (safe to do since it's just the trigger)
+            submitButton.disabled = true;
             submitButton.innerText = 'Loading...';
         });
     </script>
