@@ -8,8 +8,11 @@ import os
 # from databricks.sdk import WorkspaceClient
 
 secondary_sales_question = "Is there a secondary owner assigned to this client profile? If yes, please specify."
-internal_secondary_sales_question = "Secondary sales person rebate"
-internal_primary_sales_question = "Primary sales person rebate"
+secondary_sales_ignore_answer = "No, there is no secondary owner"
+internal_secondary_sales_question = (
+    "T-365 Rev-Share P&L (FPOV) from Secondary Sales person"
+)
+internal_primary_sales_question = "T-365 Rev-Share P&L (FPOV) from Primary Sales person"
 
 question_ordered = [
     "status",
@@ -101,26 +104,30 @@ post_offerings_available_status = [
 
 internal_form_questions = [
     {
-        "label": "Primary sales person rebate",
-        "name_attr": "Primary sales person rebate",
+        "label": "T-365 Rev-Share P&L (FPOV) from Primary Sales person",
+        "name_attr": "T-365 Rev-Share P&L (FPOV) from Primary Sales person",
         "input_type": "dropdown",
         "options": [
-            "Negative rebate",
-            "< 100k",
-            "100k - 500k",
-            "> 500k",
+            "Contribute over $1m to Finalto",
+            "Contribute between $500k to $1m to Finalto",
+            "Contribute between $0 to $500k to Finalto",
+            "Making Finalto a loss between $0 to -$500k",
+            "Making Finalto a loss between -$500k to -$1m",
+            "Making Finalto a loss over $1m",
         ],
         "required": True,
     },
     {
-        "label": "Secondary sales person rebate",
-        "name_attr": "Secondary sales person rebate",
+        "label": "T-365 Rev-Share P&L (FPOV) from Secondary Sales person",
+        "name_attr": "T-365 Rev-Share P&L (FPOV) from Secondary Sales person",
         "input_type": "dropdown",
         "options": [
-            "Negative rebate",
-            "< 100k",
-            "100k - 500k",
-            "> 500k",
+            "Contribute over $1m to Finalto",
+            "Contribute between $500k to $1m to Finalto",
+            "Contribute between $0 to $500k to Finalto",
+            "Making Finalto a loss between $0 to -$500k",
+            "Making Finalto a loss between -$500k to -$1m",
+            "Making Finalto a loss over $1m",
         ],
         "required": True,
     },
@@ -154,7 +161,7 @@ internal_form_questions = [
         "input_type": "dropdown",
         "options": [
             "Yes- Revenue Share Deal [Manual checked and confirm the the risk taker has generated loss for Company]",
-            "Yes- Revenue Share Deal [Manual checked and confirm the the risk taker has generated profit for Company] ",
+            "Yes- Revenue Share Deal [Manual checked and confirm the the risk taker has generated profit for Company]",
         ],
         "required": False,
     },
@@ -169,10 +176,12 @@ app = Flask(__name__)
 
 
 score_mapping = {
-    "Negative rebate": 0,
-    "< 100k": 1,
-    "100k - 500k": 3,
-    "> 500k": 5,
+    "Contribute over $1m to Finalto": 5,
+    "Contribute between $500k to $1m to Finalto": 3,
+    "Contribute between $0 to $500k to Finalto": 1,
+    "Making Finalto a loss between $0 to -$500k": 0,
+    "Making Finalto a loss between -$500k to -$1m": 0,
+    "Making Finalto a loss over $1m": 0,
     "Any one of the C-board members has disciplinary record, bankruptcy record": 0,
     "Any one of the C-board members is/was a board member of listed company": 3,
     "CEO,COO both are/were a board member of listed company": 5,
@@ -244,13 +253,15 @@ def internal_form():
 
     selected_data = json.loads(raw_selected_data)
 
-    status = selected_data['status']
+    status = selected_data["status"]
     disable_edit = False
     if status != enable_edit_status:
         disable_edit = True
 
     ignore_secondary_sales = (
-        True if selected_data[secondary_sales_question] == "" else False
+        True
+        if selected_data[secondary_sales_question] == secondary_sales_ignore_answer
+        else False
     )
     actual_internal_form_questions = []
     for i_q in internal_form_questions:
@@ -292,7 +303,7 @@ def review_form():
     data = dict(request.form)
     available_status = base_available_status
 
-    status = data['status']
+    status = data["status"]
     if status.startswith("Passed (1B)"):
         available_status = offerings_available_status
     elif status.startswith("Passed (2A)"):
@@ -316,6 +327,7 @@ def review_form():
                 score = score * 2
         else:
             score = int(score_mapping.get(value, 0))
+        print(f"{key}: {score}")
         internal_score += score
 
     mapped_data = []
