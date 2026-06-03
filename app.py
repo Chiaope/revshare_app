@@ -61,7 +61,13 @@ question_ordered = [
 ]
 
 enable_edit_status = "Passed (1A) -  Pending on Risk KYC"
-base_available_status = ["Rejected", "Passed (1B) - Pending on DA"]
+base_available_status = [
+    "Rejected (1B)",
+    "Rejected (1B) - Others",
+    "Rejected (1B) - Risk KYC score is too low",
+    "Rejected (1B) - Asked Sales to resubmit",
+    "Passed (1B) - Pending on DA",
+]
 offerings_available_status = [
     "Rejected (2A) - Unsatisfactory Trading Performance",
     "Rejected (2A) - Data Quality Concerns",
