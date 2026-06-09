@@ -145,7 +145,7 @@ internal_form_questions = [
             "Any one of the C-board members has disciplinary record, bankruptcy record",
             "Any one of the C-board members is/was a board member of listed company",
             "CEO,COO both are/were a board member of listed company",
-            "Others",
+            "No reliable public record found",
         ],
         "required": True,
     },
@@ -157,6 +157,8 @@ internal_form_questions = [
             "Market Maker / Principal",
             "Hybrid (A-book + B-book)",
             "Pure STP / Agency",
+            "Client does not hold any required regulatory license",
+            "No reliable public record found",
             "Others",
         ],
         "required": True,
@@ -168,6 +170,7 @@ internal_form_questions = [
         "options": [
             "Yes- Revenue Share Deal [Manual checked and confirm the the risk taker has generated loss for Company]",
             "Yes- Revenue Share Deal [Manual checked and confirm the the risk taker has generated profit for Company]",
+            "The client has not had any previous relationship with Finalto",
         ],
         "required": False,
     },
@@ -191,12 +194,15 @@ score_mapping = {
     "Any one of the C-board members has disciplinary record, bankruptcy record": 0,
     "Any one of the C-board members is/was a board member of listed company": 3,
     "CEO,COO both are/were a board member of listed company": 5,
-    "Others": 1,
     "Market Maker / Principal": 1,
     "Hybrid (A-book + B-book)": 3,
     "Pure STP / Agency": 5,
     "Yes- Revenue Share Deal [Manual checked and confirm the the risk taker has generated loss for Company]": 0,
     "Yes- Revenue Share Deal [Manual checked and confirm the the risk taker has generated profit for Company]": 5,
+    "No reliable public record found": 0,
+    "Client does not hold any required regulatory license": 0,
+    "The client has not had any previous relationship with Finalto": 0,
+    "Others": 0,
 }
 
 
